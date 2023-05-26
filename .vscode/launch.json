@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "args": [
-                "-root", "${workspaceFolder}"
+                "--root", "${workspaceFolder}", "--protocol", "connect"
             ],
             "program": "${workspaceFolder}/cmd/main.go"
         }

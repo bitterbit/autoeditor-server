@@ -1,3 +1,5 @@
+buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6bc75c6337.1 h1:Zeruoz0uE+L+RLIkJzlK5Lc5H51d7V+j4Uj/VxfpU2M=
+buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6bc75c6337.1/go.mod h1:ImZQYDqVANNi0N2PSelxxLL+JOCRciC9xhUH3U82s2s=
 buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230526115548-179a003363ae.1 h1:JIL5cjCl8OopzXntEFj1/MlU8FFmcZmR0OMcNp4Y4Mk=
 buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230526115548-179a003363ae.1/go.mod h1:IF2cj5th6IhvXchd4/nA6s9wNIE4Da0gmSszYAuFpRk=
 buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.28.1-20230526115548-179a003363ae.4/go.mod h1:8Lsqu+e5x3QeBhBlX5PXt0+r7uUrNIaYx8GJaZ3Y3Lo=
@@ -403,9 +405,13 @@ github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 h1:ZK3C5DtzV2
 github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903/go.mod h1:8TI4H3IbrackdNgv+92dI+rhpCaLqM0IfpgCgenFvRE=
 github.com/acomagu/bufpipe v1.0.4 h1:e3H4WUzM3npvo5uv95QuJM3cQspFNtFBzvJ2oNjKIDQ=
 github.com/acomagu/bufpipe v1.0.4/go.mod h1:mxdxdup/WdsKVreO5GpW4+M/1CE2sMG4jeGJ2sYmHc4=
+github.com/akamensky/argparse v1.4.0 h1:YGzvsTqCvbEZhL8zZu2AiA5nq805NZh75JNj4ajn1xc=
+github.com/akamensky/argparse v1.4.0/go.mod h1:S5kwC7IuDcEr5VeXtGPRVZ5o/FdhcMlQz4IZQuw64xA=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
+github.com/bufbuild/connect-go v1.7.0 h1:MGp82v7SCza+3RhsVhV7aMikwxvI3ZfD72YiGt8FYJo=
+github.com/bufbuild/connect-go v1.7.0/go.mod h1:GmMJYR6orFqD0Y6ZgX8pwQ8j9baizDrIQMm1/a6LnHk=
 github.com/bwesterb/go-ristretto v1.2.0/go.mod h1:fUIoIZaG73pV5biE2Blr2xEzDoMj7NFEuV9ekS419A0=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

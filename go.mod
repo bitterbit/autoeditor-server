@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6bc75c6337.1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
@@ -31,6 +32,8 @@ require (
 )
 
 require (
+	github.com/akamensky/argparse v1.4.0
+	github.com/bufbuild/connect-go v1.7.0
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/samber/lo v1.38.1
