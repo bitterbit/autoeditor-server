@@ -3,6 +3,7 @@ module galtashma/editor-server
 go 1.20
 
 require (
+	buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6bc75c6337.1
 	buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230526115548-179a003363ae.1
 	buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526160721-ec6bc75c6337.1
 	github.com/go-git/go-billy/v5 v5.4.1
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6bc75c6337.1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
@@ -37,7 +37,7 @@ require (
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/samber/lo v1.38.1
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect

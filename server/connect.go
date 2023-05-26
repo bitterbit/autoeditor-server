@@ -39,15 +39,15 @@ func StartConnectServer(directory, addr string) {
 	greeter := &ConnectServer{
 		grpcServer: NewGRPCServer(directory),
 	}
-	mux := http.NewServeMux()
+
+	router := http.NewServeMux()
 	path, handler := editorv1connect.NewGitServiceHandler(greeter)
+	router.Handle(path, handler)
 
 	fmt.Println("Starting Connect server on", addr, "with handler at", path)
-
-	mux.Handle(path, handler)
 	http.ListenAndServe(
 		"localhost:8080",
 		// Use h2c so we can serve HTTP/2 without TLS.
-		h2c.NewHandler(mux, &http2.Server{}),
+		h2c.NewHandler(router, &http2.Server{}),
 	)
 }

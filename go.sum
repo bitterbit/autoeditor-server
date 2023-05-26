@@ -3,10 +3,6 @@ buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230526160721-ec6b
 buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230526115548-179a003363ae.1 h1:JIL5cjCl8OopzXntEFj1/MlU8FFmcZmR0OMcNp4Y4Mk=
 buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230526115548-179a003363ae.1/go.mod h1:IF2cj5th6IhvXchd4/nA6s9wNIE4Da0gmSszYAuFpRk=
 buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.28.1-20230526115548-179a003363ae.4/go.mod h1:8Lsqu+e5x3QeBhBlX5PXt0+r7uUrNIaYx8GJaZ3Y3Lo=
-buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526115548-179a003363ae.1 h1:1IEQmCiS302WWbhjazJhuZ6V6eQTxmGOCIVmsBDpucg=
-buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526115548-179a003363ae.1/go.mod h1:JGJ0O1kvRkWhmbIfi31PGD54tVYLayFaI6HpGmCJYN0=
-buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526155445-91e2cac3adfb.1 h1:z2izs9Ja3X9tE+ZIILfjek+nHoFa7S9m56qqMiMOwRI=
-buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526155445-91e2cac3adfb.1/go.mod h1:JGJ0O1kvRkWhmbIfi31PGD54tVYLayFaI6HpGmCJYN0=
 buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526160721-ec6bc75c6337.1 h1:9HKa2K0vKGnaJTNyqGRwr1unFhAT7NfkBIEK1n+lzxA=
 buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230526160721-ec6bc75c6337.1/go.mod h1:JGJ0O1kvRkWhmbIfi31PGD54tVYLayFaI6HpGmCJYN0=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
