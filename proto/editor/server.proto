@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package git;
+
+service GitService {
+    rpc GetTrackedFiles(Empty) returns (FileList);
+    rpc GetFileDetails(FileRequest) returns (FileDetails);
+}
+
+message Empty {}
+
+message FileRequest {
+    string filename = 1;
+}
+
+message FileList {
+    repeated string files = 1;
+}
+
+message FileDetails {
+    string content = 1;
+    string changes = 2;
+}
