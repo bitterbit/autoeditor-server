@@ -17,7 +17,19 @@ message FileList {
     repeated string files = 1;
 }
 
+enum FileState {
+    UNMODIFIED = 0;
+    UNTRACKED = 1;
+    MODIFIED = 2;
+    ADDED = 3;
+    DELETED = 4;
+    RENAMED = 5;
+    COPIED = 6;
+    UPDATED_BUT_UNMERGED = 7;
+}
+
 message FileDetails {
     string content = 1;
-    string changes = 2;
+    string original = 2;
+    FileState state = 3;
 }

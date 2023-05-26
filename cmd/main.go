@@ -28,6 +28,7 @@ type gitServer struct {
 	rootDirectory string
 }
 
+// GetTrackedFiles retrieves the list of tracked files within a Git repository.
 func (s *gitServer) GetTrackedFiles(ctx context.Context, empty *editorv1.Empty) (*editorv1.FileList, error) {
 	files, err := getGitTrackedFiles(s.rootDirectory)
 	if err != nil {
@@ -37,21 +38,67 @@ func (s *gitServer) GetTrackedFiles(ctx context.Context, empty *editorv1.Empty) 
 	return &editorv1.FileList{Files: files}, nil
 }
 
+// GetFileDetails retrieves the details of a file at the specified path within a Git repository.
 func (s *gitServer) GetFileDetails(ctx context.Context, request *editorv1.FileRequest) (*editorv1.FileDetails, error) {
 	content, err := getFileContent(s.rootDirectory, request.Filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get file content")
 	}
 
-	changes, err := getFileContentsHEAD(s.rootDirectory, request.Filename)
+	state, err := s.getFileState(request.Filename)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get git changes")
+		return nil, errors.Wrap(err, "failed to get file state")
+	}
+
+	originalContent := ""
+	if state != editorv1.FileState_UNMODIFIED {
+		originalContent, err = getFileContentsHEAD(s.rootDirectory, request.Filename)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get git changes")
+		}
+	} else {
+		originalContent = content
 	}
 
 	return &editorv1.FileDetails{
-		Content: content,
-		Changes: changes,
+		Content:  content,
+		Original: originalContent,
+		State:    state,
 	}, nil
+}
+
+func (s *gitServer) getFileState(filePath string) (editorv1.FileState, error) {
+	repo, err := git.PlainOpen(s.rootDirectory)
+	if err != nil {
+		return editorv1.FileState_UNMODIFIED, errors.Wrap(err, "failed to open git repository")
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return editorv1.FileState_UNMODIFIED, err
+	}
+
+	status, err := worktree.Status()
+	if err != nil {
+		return editorv1.FileState_UNMODIFIED, err
+	}
+
+	switch status.File(filePath).Worktree {
+	case git.Added:
+		return editorv1.FileState_ADDED, nil
+	case git.Copied:
+		return editorv1.FileState_COPIED, nil
+	case git.Deleted:
+		return editorv1.FileState_DELETED, nil
+	case git.Modified:
+		return editorv1.FileState_MODIFIED, nil
+	case git.Renamed:
+		return editorv1.FileState_RENAMED, nil
+	case git.UpdatedButUnmerged:
+		return editorv1.FileState_UPDATED_BUT_UNMERGED, nil
+	default:
+		return editorv1.FileState_UNMODIFIED, nil
+	}
 }
 
 func getGitTrackedFiles(directory string) ([]string, error) {
