@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
+	"io"
 	"io/fs"
 	"log"
 	"net"
@@ -36,7 +38,7 @@ func (s *gitServer) GetTrackedFiles(ctx context.Context, empty *editorv1.Empty) 
 }
 
 func (s *gitServer) GetFileDetails(ctx context.Context, request *editorv1.FileRequest) (*editorv1.FileDetails, error) {
-	content, err := getFileContent(request.Filename)
+	content, err := getFileContent(s.rootDirectory, request.Filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get file content")
 	}
@@ -78,6 +80,10 @@ func getGitTrackedFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
+// getAllFiles recursively retrieves all file paths under the specified directory using the given filesystem.
+// The currentDirectory parameter represents the current directory being traversed, and the item parameter represents
+// the current file or directory being processed. If item is nil, the function starts traversing from the specified root directory.
+// The function returns a list of all file paths found.
 func getAllFiles(filesystem billy.Filesystem, currentDirectory string, item fs.FileInfo) []string {
 	if item == nil {
 		files, _ := filesystem.ReadDir(currentDirectory)
@@ -111,13 +117,32 @@ func getAllFiles(filesystem billy.Filesystem, currentDirectory string, item fs.F
 	return []string{path}
 }
 
-func getFileContent(filename string) (string, error) {
-	content, err := os.ReadFile(filename)
+// getFileContent retrieves the contents of a file at the specified path within a Git repository.
+// It returns the file content as a string and any error encountered during the process.
+func getFileContent(rootDirectory, filePath string) (string, error) {
+	repo, err := git.PlainOpen(rootDirectory)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to read file content")
+		return "", errors.Wrap(err, "failed to open git repository")
 	}
 
-	return string(content), nil
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return "", err
+	}
+
+	file, err := worktree.Filesystem.Open(filePath)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to open file: %s", filePath)
+	}
+	defer file.Close()
+
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, file)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to read file: %s", filePath)
+	}
+
+	return buf.String(), nil
 }
 
 func getGitChanges(directory, filename string) (string, error) {
