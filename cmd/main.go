@@ -2,13 +2,19 @@ package main
 
 import (
 	"context"
+	"flag"
+	"io/fs"
 	"log"
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/go-git/go-billy/v5"
 	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -16,10 +22,12 @@ import (
 	editorv1 "buf.build/gen/go/galtashma/editor/protocolbuffers/go/editor"
 )
 
-type gitServer struct{}
+type gitServer struct {
+	rootDirectory string
+}
 
 func (s *gitServer) GetTrackedFiles(ctx context.Context, empty *editorv1.Empty) (*editorv1.FileList, error) {
-	files, err := getGitTrackedFiles()
+	files, err := getGitTrackedFiles(s.rootDirectory)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tracked files")
 	}
@@ -33,7 +41,7 @@ func (s *gitServer) GetFileDetails(ctx context.Context, request *editorv1.FileRe
 		return nil, errors.Wrap(err, "failed to get file content")
 	}
 
-	changes, err := getGitChanges(request.Filename)
+	changes, err := getGitChanges(s.rootDirectory, request.Filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get git changes")
 	}
@@ -44,30 +52,63 @@ func (s *gitServer) GetFileDetails(ctx context.Context, request *editorv1.FileRe
 	}, nil
 }
 
-func getGitTrackedFiles() ([]string, error) {
-	repo, err := git.PlainOpen(getCurrentDirectory())
+func getGitTrackedFiles(directory string) ([]string, error) {
+	repo, err := git.PlainOpen(directory)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open git repository")
 	}
 
 	worktree, err := repo.Worktree()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get git worktree")
+		return nil, err
 	}
 
-	status, err := worktree.Status()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get git status")
-	}
+	filesystem := worktree.Filesystem
+	files := getAllFiles(filesystem, "/", nil)
 
-	files := make([]string, 0)
-	for file, fs := range status {
-		if fs.Worktree == git.Unmodified {
-			files = append(files, file)
+	gitignoreMatcher := gitignore.NewMatcher(worktree.Excludes)
+
+	files = lo.Filter(files, func(path string, index int) bool {
+		if strings.HasPrefix(path, ".git/") {
+			return false
 		}
-	}
+		return !gitignoreMatcher.Match([]string{path}, false)
+	})
 
 	return files, nil
+}
+
+func getAllFiles(filesystem billy.Filesystem, currentDirectory string, item fs.FileInfo) []string {
+	if item == nil {
+		files, _ := filesystem.ReadDir(currentDirectory)
+		allFiles := lo.Map(files, func(file fs.FileInfo, index int) []string {
+			return getAllFiles(filesystem, currentDirectory, file)
+		})
+
+		return lo.Flatten(allFiles)
+	}
+
+	var path string
+	if currentDirectory == "/" {
+		path = item.Name()
+	} else {
+		path = filepath.Join(currentDirectory, item.Name())
+	}
+
+	if item.IsDir() {
+		files, err := filesystem.ReadDir(path)
+		if err != nil {
+			panic(err)
+		}
+
+		allFiles := lo.Map(files, func(file fs.FileInfo, index int) []string {
+			return getAllFiles(filesystem, path, file)
+		})
+
+		return lo.Flatten(allFiles)
+	}
+
+	return []string{path}
 }
 
 func getFileContent(filename string) (string, error) {
@@ -79,10 +120,11 @@ func getFileContent(filename string) (string, error) {
 	return string(content), nil
 }
 
-func getGitChanges(filename string) (string, error) {
-	repo, err := git.PlainOpen(getCurrentDirectory())
+func getGitChanges(directory, filename string) (string, error) {
+	repo, err := git.PlainOpen(directory)
+
 	if err != nil {
-		return "", errors.Wrap(err, "failed to open git repository")
+		return "", errors.Wrapf(err, "failed to open git repository %v", directory)
 	}
 
 	commit, err := repo.Head()
@@ -120,8 +162,15 @@ func getCurrentDirectory() string {
 }
 
 func main() {
+	rootDirectory := flag.String("root", getCurrentDirectory(), "Root Git directory")
+	flag.Parse()
+
 	grpcServer := grpc.NewServer()
-	editorgrpc.RegisterGitServiceServer(grpcServer, &gitServer{})
+
+	log.Println("root directory", *rootDirectory)
+	editorgrpc.RegisterGitServiceServer(grpcServer, &gitServer{
+		rootDirectory: *rootDirectory,
+	})
 
 	log.Println("Starting gRPC server on port 50051...")
 	listener, err := net.Listen("tcp", ":50051")
