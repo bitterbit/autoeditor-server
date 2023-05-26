@@ -43,7 +43,7 @@ func (s *gitServer) GetFileDetails(ctx context.Context, request *editorv1.FileRe
 		return nil, errors.Wrap(err, "failed to get file content")
 	}
 
-	changes, err := getGitChanges(s.rootDirectory, request.Filename)
+	changes, err := getFileContentsHEAD(s.rootDirectory, request.Filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get git changes")
 	}
@@ -145,37 +145,49 @@ func getFileContent(rootDirectory, filePath string) (string, error) {
 	return buf.String(), nil
 }
 
-func getGitChanges(directory, filename string) (string, error) {
+func getFileContentsHEAD(directory, filePath string) (string, error) {
 	repo, err := git.PlainOpen(directory)
-
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open git repository %v", directory)
 	}
 
-	commit, err := repo.Head()
+	ref, err := repo.Head()
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get git head commit")
+		return "", errors.Wrap(err, "failed to get HEAD reference")
 	}
 
-	commitObj, err := repo.CommitObject(commit.Hash())
+	// Get the commit object from the HEAD reference
+	commit, err := repo.CommitObject(ref.Hash())
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get git commit object")
+		return "", errors.Wrap(err, "failed to get commit object")
 	}
 
-	diff, err := commitObj.PatchContext(context.Background(), commitObj)
+	// Get the file tree from the commit
+	tree, err := commit.Tree()
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get git diff")
+		return "", errors.Wrap(err, "failed to get commit tree")
 	}
 
-	for _, patches := range diff.FilePatches() {
-		from, to := patches.Files()
-		if from.Path() == filename || to.Path() == filename {
-			// TODO
-			return "", nil
-		}
+	// Get the file entry from the tree
+	fileEntry, err := tree.FindEntry(filePath)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to find file entry for path: %s", filePath)
 	}
 
-	return "", nil
+	blob, err := repo.BlobObject(fileEntry.Hash)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get blob object")
+	}
+
+	reader, err := blob.Reader()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to read blob file")
+	}
+
+	buffer := bytes.NewBuffer(nil)
+	io.Copy(buffer, reader)
+
+	return buffer.String(), nil
 }
 
 func getCurrentDirectory() string {
