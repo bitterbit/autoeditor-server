@@ -73,13 +73,19 @@ func (s *Git) GetGitTrackedFiles() ([]string, error) {
 	filesystem := worktree.Filesystem
 	files := getAllFiles(filesystem, "/", nil)
 
-	gitignoreMatcher := gitignore.NewMatcher(worktree.Excludes)
+	patterns, err := gitignore.ReadPatterns(filesystem, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read gitignore patterns")
+	}
+	patterns = append(patterns, worktree.Excludes...)
+
+	gitignoreMatcher := gitignore.NewMatcher(patterns)
 
 	files = lo.Filter(files, func(path string, index int) bool {
 		if strings.HasPrefix(path, ".git/") {
 			return false
 		}
-		return !gitignoreMatcher.Match([]string{path}, false)
+		return !gitignoreMatcher.Match(strings.Split(path, "/"), false)
 	})
 
 	return files, nil
@@ -107,14 +113,23 @@ func getAllFiles(filesystem billy.Filesystem, currentDirectory string, item fs.F
 	}
 
 	if item.IsDir() {
-		files, err := filesystem.ReadDir(path)
+		children, err := filesystem.ReadDir(path)
 		if err != nil {
 			panic(err)
 		}
 
-		allFiles := lo.Map(files, func(file fs.FileInfo, index int) []string {
+		// gitIgnore, exists := lo.Find(children, func(file fs.FileInfo) bool {
+		// 	return file.Name() == ".gitignore"
+		// })
+
+		allFiles := lo.Map(children, func(file fs.FileInfo, index int) []string {
 			return getAllFiles(filesystem, path, file)
 		})
+
+		// if exists {
+		// 	gitignore.ReadPatterns(filesystem, gitIgnore.Name())
+		// 	patterns, err := gitignore.Parse(file)
+		// }
 
 		return lo.Flatten(allFiles)
 	}
