@@ -36,10 +36,13 @@ message FileDetails {
 }
 
 message CodeModificationRequest {
-    string code = 1;
-    string prompt = 2;
+    string prompt = 1;
+    string path = 2;
+    int32 line_start = 3;
+    int32 line_end = 4;
 }
 
 message CodeModificationResponse {
-    string modified_code = 1;
+    string explenation = 1;
+    repeated string modified_files = 2;
 }

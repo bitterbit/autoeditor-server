@@ -3,9 +3,9 @@ module galtashma/editor-server
 go 1.20
 
 require (
-	buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230527102030-ef46f8b3808d.1
-	buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230527102030-ef46f8b3808d.1
-	buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230527102030-ef46f8b3808d.1
+	buf.build/gen/go/galtashma/editor/bufbuild/connect-go v1.7.0-20230527110517-6aec07bbe8ac.1
+	buf.build/gen/go/galtashma/editor/grpc/go v1.3.0-20230527110517-6aec07bbe8ac.1
+	buf.build/gen/go/galtashma/editor/protocolbuffers/go v1.30.0-20230527110517-6aec07bbe8ac.1
 	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1

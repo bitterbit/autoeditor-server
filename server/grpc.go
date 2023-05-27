@@ -2,9 +2,12 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"galtashma/editor-server/app"
 	"log"
 	"net"
+	"path/filepath"
+	"strings"
 
 	"buf.build/gen/go/galtashma/editor/grpc/go/editor/editorgrpc"
 	editorv1 "buf.build/gen/go/galtashma/editor/protocolbuffers/go/editor"
@@ -66,19 +69,44 @@ func (s *GRPCServer) GetFileDetails(ctx context.Context, request *editorv1.FileR
 }
 
 func (s *GRPCServer) ModifyCode(ctx context.Context, req *editorv1.CodeModificationRequest) (*editorv1.CodeModificationResponse, error) {
-	// Extract the code and prompt from the request
-	code := req.GetCode()
 	prompt := req.GetPrompt()
 
+	lang := filepath.Ext(req.GetPath())
+
+	content, err := s.git.GetFileContent(req.GetPath())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get file content")
+	}
+
+	start := req.GetLineStart()
+	if start < 0 {
+		start = 0
+	}
+	end := req.GetLineEnd()
+	if end < 0 {
+		end = -1
+	}
+
+	lines := strings.Split(content, "\n")
+	code := strings.Join(lines[start:end], "\n")
+
 	// Call the OpenAI GPT model to modify the code based on the prompt
-	modifiedCode, err := s.openaiSession.ModifyCode(ctx, code, prompt)
+	modifiedCode, err := s.openaiSession.ModifyCode(ctx, code, prompt, lang)
 	if err != nil {
 		return nil, err
 	}
 
+	explenation, err := s.openaiSession.ExplainModification(ctx, prompt, modifiedCode)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Modification", modifiedCode)
+
 	// Create and return the RPC response with the modified code
 	res := &editorv1.CodeModificationResponse{
-		ModifiedCode: modifiedCode,
+		Explenation:   explenation,
+		ModifiedFiles: []string{req.GetPath()},
 	}
 
 	return res, nil
