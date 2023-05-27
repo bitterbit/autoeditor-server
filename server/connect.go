@@ -35,13 +35,22 @@ func (s *ConnectServer) GetFileDetails(ctx context.Context, req *connect.Request
 	return connect.NewResponse(fileDetails), nil
 }
 
-func StartConnectServer(directory, addr string) {
-	greeter := &ConnectServer{
-		grpcServer: NewGRPCServer(directory),
+func (s *ConnectServer) ModifyCode(ctx context.Context, req *connect.Request[editorv1.CodeModificationRequest]) (*connect.Response[editorv1.CodeModificationResponse], error) {
+	codeModificationResponse, err := s.grpcServer.ModifyCode(ctx, req.Msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return connect.NewResponse(codeModificationResponse), nil
+}
+
+func StartConnectServer(directory, addr, openapiKey string) {
+	server := &ConnectServer{
+		grpcServer: NewGRPCServer(directory, openapiKey),
 	}
 
 	router := http.NewServeMux()
-	path, handler := editorv1connect.NewGitServiceHandler(greeter)
+	path, handler := editorv1connect.NewGitServiceHandler(server)
 	router.Handle(path, handler)
 
 	fmt.Println("Starting Connect server on", addr, "with handler at", path)

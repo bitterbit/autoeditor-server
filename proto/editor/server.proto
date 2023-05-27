@@ -5,6 +5,7 @@ package git;
 service GitService {
     rpc GetTrackedFiles(Empty) returns (FileList);
     rpc GetFileDetails(FileRequest) returns (FileDetails);
+    rpc ModifyCode(CodeModificationRequest) returns (CodeModificationResponse);
 }
 
 message Empty {}
@@ -32,4 +33,13 @@ message FileDetails {
     string content = 1;
     string original = 2;
     FileState state = 3;
+}
+
+message CodeModificationRequest {
+    string code = 1;
+    string prompt = 2;
+}
+
+message CodeModificationResponse {
+    string modified_code = 1;
 }

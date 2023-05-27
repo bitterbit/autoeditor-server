@@ -15,11 +15,15 @@ import (
 )
 
 type GRPCServer struct {
-	git *app.Git
+	git           *app.Git
+	openaiSession *app.OpenAISession
 }
 
-func NewGRPCServer(rootDirectory string) *GRPCServer {
-	return &GRPCServer{git: app.NewGit(rootDirectory)}
+func NewGRPCServer(rootDirectory, openapiKey string) *GRPCServer {
+	return &GRPCServer{
+		git:           app.NewGit(rootDirectory),
+		openaiSession: app.NewOpenAISession(openapiKey),
+	}
 }
 
 // GetTrackedFiles retrieves the list of tracked files within a Git repository.
@@ -61,11 +65,30 @@ func (s *GRPCServer) GetFileDetails(ctx context.Context, request *editorv1.FileR
 	}, nil
 }
 
-func StartGRPCServer(rootDirectory, addr string) error {
+func (s *GRPCServer) ModifyCode(ctx context.Context, req *editorv1.CodeModificationRequest) (*editorv1.CodeModificationResponse, error) {
+	// Extract the code and prompt from the request
+	code := req.GetCode()
+	prompt := req.GetPrompt()
+
+	// Call the OpenAI GPT model to modify the code based on the prompt
+	modifiedCode, err := s.openaiSession.ModifyCode(ctx, code, prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create and return the RPC response with the modified code
+	res := &editorv1.CodeModificationResponse{
+		ModifiedCode: modifiedCode,
+	}
+
+	return res, nil
+}
+
+func StartGRPCServer(rootDirectory, addr, openaiKey string) error {
 	grpcServer := grpc.NewServer()
 
 	log.Println("root directory", rootDirectory)
-	editorgrpc.RegisterGitServiceServer(grpcServer, NewGRPCServer(rootDirectory))
+	editorgrpc.RegisterGitServiceServer(grpcServer, NewGRPCServer(rootDirectory, openaiKey))
 
 	log.Printf("Starting gRPC server on %s \n", addr)
 	listener, err := net.Listen("tcp", addr)
