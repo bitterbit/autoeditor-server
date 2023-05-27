@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -192,4 +193,8 @@ func (s *Git) GetFileContentsHEAD(filePath string) (string, error) {
 	io.Copy(buffer, reader)
 
 	return buffer.String(), nil
+}
+
+func (g *Git) UpdateFile(filePath, updatedContent string) error {
+	return os.WriteFile(filepath.Join(g.rootDirectory, filePath), []byte(updatedContent), 0644)
 }

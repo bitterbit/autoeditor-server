@@ -96,16 +96,24 @@ func (s *GRPCServer) ModifyCode(ctx context.Context, req *editorv1.CodeModificat
 		return nil, err
 	}
 
-	explenation, err := s.openaiSession.ExplainModification(ctx, prompt, modifiedCode)
+	fmt.Println("Modification", modifiedCode)
+
+	newLines := append(lines[:start], append(strings.Split(modifiedCode, "\n"), lines[end:]...)...)
+
+	// Write the new content to the file
+	err = s.git.UpdateFile(req.GetPath(), strings.Join(newLines, "\n"))
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("Modification", modifiedCode)
+	// explenation, err := s.openaiSession.ExplainModification(ctx, prompt, modifiedCode)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Create and return the RPC response with the modified code
 	res := &editorv1.CodeModificationResponse{
-		Explenation:   explenation,
+		Explenation:   "",
 		ModifiedFiles: []string{req.GetPath()},
 	}
 
